@@ -23,9 +23,27 @@ export type Lambda = (...vars: any[]) => Expr
  * q.Ref(q.Collection('spells'), '181388642046968320')
  */
 export function Ref(ref: ExprArg, id?: ExprArg): Expr
+
 export function Bytes(bytes: ExprArg | ArrayBuffer | Uint8Array): Expr
-export function Abort(msg: ExprArg): Expr
-export function At(timestamp: ExprArg, expr: ExprArg): Expr
+
+/**
+ * The `Abort` function terminates the current transaction and augments
+ * the returned error with the associated message. Any modifications to
+ * data or schema in the aborted transaction are ignored, even if this
+ * modification took place before the abort function was executed.
+ *
+ * [API Reference](https://docs.fauna.com/fauna/current/api/fql/functions/abort?lang=javascript)
+ *
+ * ---
+ *
+ * @param {string|ExprArg} msg
+ * An abort message.
+ *
+ * @example
+ * q.Abort('Reset Transaction')
+ * // Error: [BadRequest] transaction aborted: Reset Transaction
+ */
+export function Abort(msg: ExprArg | string): Expr
 export function Let(vars: ExprArg, in_expr: ExprArg): Expr
 export function Var(varName: ExprArg): Expr
 export function If(
