@@ -93,6 +93,23 @@ export function At(timestamp: ExprArg, expr: ExprArg): Expr
  * q.Let({ x: 1, y: 2 }, q.Var('x'))
  */
 export function Let(vars: ExprArg, in_expr: ExprArg): Expr
+
+/**
+ * The `Var` statement evaluates and returns the value stored in a named variable.
+ * The `Var` statement can only be used inside other statements, such
+ * as `Let` or `Lambda`.
+ *
+ * [API Reference](https://docs.fauna.com/fauna/current/api/fql/functions/var?lang=javascript)
+ *
+ * ---
+ *
+ * @param {ExprArg} varName
+ * The name of the variable whose value should be returned.
+ *
+ * @example
+ * q.Let({ x: 1, y: 2 }, q.Var('x'))
+ * // The value x stored in the variable identified by name.
+ */
 export function Var(varName: ExprArg): Expr
 export function If(
   condition: ExprArg,
