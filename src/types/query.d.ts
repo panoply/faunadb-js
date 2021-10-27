@@ -195,6 +195,30 @@ export function Lambda(var_name: ExprArg, expr: ExprArg): Expr
  * q.Call('increment', 2)
  */
 export function Call(ref: ExprArg, ...args: ExprArg[]): Expr
+
+/**
+ * The `Query` function wraps the provided Lambda function, preventing
+ * immediate execution, and making the function available for use in
+ * index bindings, `CreateFunction`, and ABAC predicates.
+ *
+ * For example, when creating a named function with `CreateFunction`,
+ * `Query` defers execution of the Lambda function until the `Call`
+ * function is called.
+ *
+ * While you can use a `Query` in a `Let` binding, it is not possible to
+ * call the bound function. You also cannot use a `Query` instead of a
+ * lambda function, such as with `Map` or `Reduce`.
+ *
+ * [API Reference](https://docs.fauna.com/fauna/current/api/fql/functions/query?lang=javascript)
+ *
+ * ---
+ *
+ * @param {ExprArg|Lambda} lambda
+ * The Lambda function to wrap.
+ *
+ * @example
+ * q.Query(q.Lambda('X', q.Var('X')))
+ */
 export function Query(lambda: ExprArg | Lambda): Expr
 export function Map(collection: ExprArg, lambda_expr: ExprArg | Lambda): Expr
 export function Merge(
