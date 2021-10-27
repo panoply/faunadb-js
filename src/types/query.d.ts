@@ -24,6 +24,7 @@ export type Lambda = (...vars: any[]) => Expr
  */
 export function Ref(ref: ExprArg, id?: ExprArg): Expr
 
+
 export function Bytes(bytes: ExprArg | ArrayBuffer | Uint8Array): Expr
 
 /**
@@ -44,6 +45,32 @@ export function Bytes(bytes: ExprArg | ArrayBuffer | Uint8Array): Expr
  * // Error: [BadRequest] transaction aborted: Reset Transaction
  */
 export function Abort(msg: ExprArg | string): Expr
+
+/**
+ * The `At` function executes a temporal query, a query which examines
+ * the data in the past. The timestamp parameter determines the data available
+ * for viewing by creating a virtual snapshot of the data which was current at
+ * that date and time. All reads from the associated expression is then executed
+ * on that virtual snapshot. In contrast, all write operations must be executed at
+ * the current time. Attempting a write operation at any other time produces an error.
+ *
+ * [API Reference](https://docs.fauna.com/fauna/current/api/fql/functions/at?lang=javascript)
+ *
+ * ---
+ *
+ * @param {ExprArg} timestamp
+ * The timestamp of the virtual snapshot of the data.
+ *
+ * @param {ExprArg} expr
+ * The FQL statement to be executed.
+ *
+ * @example
+ * q.At(
+ *   q.Time('1970-01-01T00:00:00Z'),
+ *   q.Paginate(q.Collections())
+ * )
+ */
+export function At(timestamp: ExprArg, expr: ExprArg): Expr
 export function Let(vars: ExprArg, in_expr: ExprArg): Expr
 export function Var(varName: ExprArg): Expr
 export function If(
