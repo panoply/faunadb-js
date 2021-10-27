@@ -71,6 +71,27 @@ export function Abort(msg: ExprArg | string): Expr
  * )
  */
 export function At(timestamp: ExprArg, expr: ExprArg): Expr
+
+/**
+ * The `Let` function binds one or more variables to a single value or expression.
+ * When multiple variables are defined, the evaluation is from left to right.
+ * Variables which have previously been defined may be used to define future variables.
+ * Variables are lexically scoped to the expression passed via the in parameter.
+ * The value of a variable can be referenced with `Var` syntax.
+ *
+ * [API Reference](https://docs.fauna.com/fauna/current/api/fql/functions/let?lang=javascript)
+ *
+ * ---
+ *
+ * @param {ExprArg} timestamp
+ * The variable or variables to define.
+ *
+ * @param {ExprArg} expr
+ * The expression in which the variables are defined.
+ *
+ * @example
+ * q.Let({ x: 1, y: 2 }, q.Var('x'))
+ */
 export function Let(vars: ExprArg, in_expr: ExprArg): Expr
 export function Var(varName: ExprArg): Expr
 export function If(
