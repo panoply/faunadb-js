@@ -4,6 +4,24 @@ type ExprVal = Expr | string | number | boolean | { [key: string]: any }
 type ExprArg = ExprVal | Array<ExprVal>
 export type Lambda = (...vars: any[]) => Expr
 
+/**
+ * The `Ref` function is used to express the reference for a
+ * specific document that exists in the current database,
+ * within the `schema_ref`, having the document ID `id`.
+ *
+ * [API Reference](https://docs.fauna.com/fauna/current/api/fql/functions/ref?lang=javascript)
+ *
+ * ---
+ *
+ * @param {ExprArg} ref
+ * A Reference to a specific schema document to which the desired document belongs.
+ *
+ * @param {ExprArg} id
+ * A document identifier, which is a string-encoded 64-bit integer.
+ *
+ * @example
+ * q.Ref(q.Collection('spells'), '181388642046968320')
+ */
 export function Ref(ref: ExprArg, id?: ExprArg): Expr
 export function Bytes(bytes: ExprArg | ArrayBuffer | Uint8Array): Expr
 export function Abort(msg: ExprArg): Expr
