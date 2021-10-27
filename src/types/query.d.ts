@@ -111,6 +111,29 @@ export function Let(vars: ExprArg, in_expr: ExprArg): Expr
  * // The value x stored in the variable identified by name.
  */
 export function Var(varName: ExprArg): Expr
+
+/**
+ * The `If` function evaluates and returns the `then` or `_else` expression,
+ * depending on the value of the `condition` expression. If the `condition` expression
+ * evaluates to anything other than a `Boolean`, If returns an `"invalid argument"` error.
+ * Any valid Fauna Query Language expression is acceptable, including `null`.
+ *
+ * [API Reference](https://docs.fauna.com/fauna/current/api/fql/functions/if?lang=javascript)
+ *
+ * ---
+ *
+ * @param {ExprArg} condition
+ * The conditional expression to be evaluated and tested for `true` or `false`.
+ *
+ * @param {ExprArg|null} then
+ * The expression or variable to return if `condition` is `true`.
+ *
+ * @param {ExprArg|null} _else
+ * The expression or variable to return if `condition` is `false`.
+ *
+ * @example
+ * q.If(true, 'was true', 'was false')
+ */
 export function If(
   condition: ExprArg,
   then: ExprArg | null,
