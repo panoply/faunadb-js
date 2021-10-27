@@ -139,6 +139,33 @@ export function If(
   then: ExprArg | null,
   _else: ExprArg | null
 ): Expr
+
+/**
+ * The `Do` function evaluates a list of expressions which are provided as
+ * arguments. This evaluation occurs sequentially, from left to right, ensuring
+ * that modifications made by earlier expressions are seen by later expressions.
+ * If one of the expressions evaluated by `Do` returns an error, the current
+ * transaction is terminated and none of the expressions' effects are persisted
+ * in the database.
+ *
+ * If all of the expressions executed by `Do` succeed, only the results of the last
+ * statements executed are returned. If no expressions are provided, `Do` returns an error.
+ *
+ * [API Reference](https://docs.fauna.com/fauna/current/api/fql/functions/do?lang=javascript)
+ *
+ * ---
+ *
+ * @param {...ExprArg[]} args
+ * One or more expressions to be evaluated.
+ *
+ * @example
+ * q.Do(
+ *   q.Create(
+ *     q.Ref(q.Collection('magical_creatures'), '2'), { data: { name: 'Orwen' } }
+ *   ),
+ *   q.Get(q.Ref(q.Collection('magical_creatures'), '2'))
+ * )
+ */
 export function Do(...args: ExprArg[]): Expr
 export function Object(fields: ExprArg): Expr
 export function Lambda(f: Lambda): Expr
