@@ -170,6 +170,30 @@ export function Do(...args: ExprArg[]): Expr
 export function Object(fields: ExprArg): Expr
 export function Lambda(f: Lambda): Expr
 export function Lambda(var_name: ExprArg, expr: ExprArg): Expr
+
+/**
+ * The `Call` function executes a user-defined function previously defined
+ * with the CreateFunction function.
+ *
+ * The `Call` function takes a variable length list of arguments which must
+ * match the type and number of the function being called. These arguments are
+ * provided to the function being executed by `Call`.
+ *
+ *
+ * [API Reference](https://docs.fauna.com/fauna/current/api/fql/functions/call?lang=javascript)
+ *
+ * ---
+ *
+ * @param {ExprArg} ref
+ * The name, or `Reference`, of the function to call.
+ * A function reference can be acquired using the Function function.
+ *
+ * @param {...ExprArg[]} args
+ * The arguments for the function.
+ *
+ * @example
+ * q.Call('increment', 2)
+ */
 export function Call(ref: ExprArg, ...args: ExprArg[]): Expr
 export function Query(lambda: ExprArg | Lambda): Expr
 export function Map(collection: ExprArg, lambda_expr: ExprArg | Lambda): Expr
