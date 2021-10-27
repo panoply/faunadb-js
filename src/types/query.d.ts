@@ -220,6 +220,28 @@ export function Call(ref: ExprArg, ...args: ExprArg[]): Expr
  * q.Query(q.Lambda('X', q.Var('X')))
  */
 export function Query(lambda: ExprArg | Lambda): Expr
+
+/**
+ * The `Map` function iterates on the provided array, calling the provided
+ * lambda function repeatedly with each item in array, and returns the results
+ * of all invocations in a new array of the same type (an `Array` or `Page`). As
+ * `Map` processes array, each invocation of the lambda function can see the
+ * effects of write operations from previous invocations.
+*
+ * [API Reference](https://docs.fauna.com/fauna/current/api/fql/functions/map?lang=javascript)
+ *
+ * ---
+ *
+ * @param {ExprArg} collection
+ * The target `Array` over which the Lambda function iterates/operates.
+ *
+ * @param {ExprArg|Lambda} lambda_expr
+ * The anonymous function to be executed. It must accept one argument,
+ * which is the current item from `array` that is being processed.
+ *
+ * @example
+ * q.Map([1, 2, 3], q.Lambda('x', q.Add(q.Var('x'), 1)))
+ */
 export function Map(collection: ExprArg, lambda_expr: ExprArg | Lambda): Expr
 export function Merge(
   object: ExprArg,
