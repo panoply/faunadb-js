@@ -173,11 +173,10 @@ export function Lambda(var_name: ExprArg, expr: ExprArg): Expr
 
 /**
  * The `Call` function executes a user-defined function previously defined
- * with the CreateFunction function.
- *
- * The `Call` function takes a variable length list of arguments which must
- * match the type and number of the function being called. These arguments are
- * provided to the function being executed by `Call`.
+ * with the CreateFunction function. The `Call` function takes a variable
+ * length list of arguments which must match the type and number of the
+ * function being called. These arguments are provided to the function being
+ * executed by `Call`.
  *
  *
  * [API Reference](https://docs.fauna.com/fauna/current/api/fql/functions/call?lang=javascript)
@@ -204,10 +203,6 @@ export function Call(ref: ExprArg, ...args: ExprArg[]): Expr
  * For example, when creating a named function with `CreateFunction`,
  * `Query` defers execution of the Lambda function until the `Call`
  * function is called.
- *
- * While you can use a `Query` in a `Let` binding, it is not possible to
- * call the bound function. You also cannot use a `Query` instead of a
- * lambda function, such as with `Map` or `Reduce`.
  *
  * [API Reference](https://docs.fauna.com/fauna/current/api/fql/functions/query?lang=javascript)
  *
