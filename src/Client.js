@@ -11,8 +11,6 @@ var stream = require('./stream')
 var util = require('./_util')
 var values = require('./values')
 
-var notifyAboutNewVersion = util.notifyAboutNewVersion()
-
 /**
  * The callback that will be executed after every completed request.
  *
@@ -140,9 +138,9 @@ var notifyAboutNewVersion = util.notifyAboutNewVersion()
  * @constructor
  * @param {?Object} options
  *   Object that configures this FaunaDB client.
+ * @param {?string} options.endpoint
+ *   Full URL for the FaunaDB server.
  * @param {?string} options.domain
- *   Base URL for the FaunaDB server.
- * @param {?{ string: string }} options.headers
  *   Base URL for the FaunaDB server.
  * @param {?('http'|'https')} options.scheme
  *   HTTP scheme to use.
@@ -153,24 +151,34 @@ var notifyAboutNewVersion = util.notifyAboutNewVersion()
  *   Callback that will be called after every completed request.
  * @param {?boolean} options.keepAlive
  *   Configures http/https keepAlive option (ignored in browser environments)
+ * @param {?{ string: string }} options.headers
+ *   Optional headers to send with requests
  * @param {?fetch} options.fetch
  *   a fetch compatible [API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) for making a request
  * @param {?number} options.queryTimeout
  *   Sets the maximum amount of time (in milliseconds) for query execution on the server
  * @param {?number} options.http2SessionIdleTime
  *   Sets the maximum amount of time (in milliseconds) an HTTP2 session may live
- *   when there's no activity. Must either be a non-negative integer, or Infinity to allow the
- *   HTTP2 session to live indefinitely (use `Client#close` to manually terminate the client).
- *   Only applicable for NodeJS environment (when http2 module is used). Default is 500ms;
+ *   when there's no activity. Must be a non-negative integer, with a maximum value of 5000.
+ *   If an invalid value is passed a default of 500 ms is applied. If a value
+ *   exceeding 5000 ms is passed (e.g. Infinity) the maximum of 5000 ms is applied.
+ *   Only applicable for NodeJS environment (when http2 module is used).
  *   can also be configured via the FAUNADB_HTTP2_SESSION_IDLE_TIME environment variable
  *   which has the highest priority and overrides the option passed into the Client constructor.
  * @param {?boolean} options.checkNewVersion
  *   Enabled by default. Prints a message to the terminal when a newer driver is available.
+ * @param {?boolean} options.metrics
+ *   Disabled by default. Controls whether or not query metrics are returned.
  */
 function Client(options) {
-  var http2SessionIdleTime = getHttp2SessionIdleTime()
+  const http2SessionIdleTime = getHttp2SessionIdleTime(
+    options ? options.http2SessionIdleTime : undefined
+  )
+
+  if (options) options.http2SessionIdleTime = http2SessionIdleTime
 
   options = util.applyDefaults(options, {
+    endpoint: null,
     domain: 'db.fauna.com',
     scheme: 'https',
     port: null,
@@ -180,14 +188,9 @@ function Client(options) {
     headers: {},
     fetch: undefined,
     queryTimeout: null,
-    http2SessionIdleTime: http2SessionIdleTime.value,
-    checkNewVersion: true,
+    http2SessionIdleTime,
+    checkNewVersion: false,
   })
-  notifyAboutNewVersion(options.checkNewVersion)
-
-  if (http2SessionIdleTime.shouldOverride) {
-    options.http2SessionIdleTime = http2SessionIdleTime.value
-  }
 
   this._observer = options.observer
   this._http = new http.HttpClient(options)
@@ -213,6 +216,8 @@ Client.apiVersion = packageJson.apiVersion
  * @return {external:Promise<Object>} FaunaDB response object.
  */
 Client.prototype.query = function(expression, options) {
+  query.arity.between(1, 2, arguments, 'Client.prototype.query')
+  options = Object.assign({}, this._globalQueryOptions, options)
   return this._execute('POST', '', query.wrap(expression), null, options)
 }
 
@@ -282,7 +287,30 @@ Client.prototype.close = function(opts) {
   return this._http.close(opts)
 }
 
-Client.prototype._execute = function(method, path, data, query, options) {
+/**
+ * Executes a query via the FaunaDB Query API.
+ * See the [docs](https://app.fauna.com/documentation/reference/queryapi),
+ * and the query functions in this documentation.
+ * @param expression {module:query~ExprArg}
+ *   The query to execute. Created from {@link module:query} functions.
+ * @param {?Object} options
+ *   Object that configures the current query, overriding FaunaDB client options.
+ * @param {?string} options.secret FaunaDB secret (see [Reference Documentation](https://app.fauna.com/documentation/intro/security))
+ * @return {external:Promise<Object>} {value, metrics} An object containing the FaunaDB response object and the list of query metrics incurred by the request.
+ */
+Client.prototype.queryWithMetrics = function(expression, options) {
+  query.arity.between(1, 2, arguments, 'Client.prototype.query')
+  return this._execute('POST', '', query.wrap(expression), null, options, true)
+}
+
+Client.prototype._execute = function(
+  method,
+  path,
+  data,
+  query,
+  options,
+  returnMetrics = false
+) {
   query = util.defaults(query, null)
 
   if (
@@ -328,7 +356,26 @@ Client.prototype._execute = function(method, path, data, query, options) {
       )
       self._handleRequestResult(response, result, options)
 
-      return responseObject['resource']
+      const metricsHeaders = [
+        'x-compute-ops',
+        'x-byte-read-ops',
+        'x-byte-write-ops',
+        'x-query-time',
+        'x-txn-retries',
+      ]
+
+      if (returnMetrics) {
+        return {
+          value: responseObject['resource'],
+          metrics: Object.fromEntries(
+            Array.from(Object.entries(response.headers))
+              .filter(([k, v]) => metricsHeaders.includes(k))
+              .map(([k, v]) => [k, parseInt(v)])
+          ),
+        }
+      } else {
+        return responseObject['resource']
+      }
     })
 }
 
@@ -350,20 +397,28 @@ Client.prototype._handleRequestResult = function(response, result, options) {
   errors.FaunaHTTPError.raiseForStatusCode(result)
 }
 
-function getHttp2SessionIdleTime() {
-  var fromEnv = util.getEnvVariable('FAUNADB_HTTP2_SESSION_IDLE_TIME')
-  var parsed =
-    // Allow either "Infinity" or parsable integer string.
-    fromEnv === 'Infinity' ? Infinity : parseInt(fromEnv, 10)
-  var useEnvVar = !isNaN(parsed)
+function getHttp2SessionIdleTime(configuredIdleTime) {
+  const maxIdleTime = 5000
+  const defaultIdleTime = 500
+  const envIdleTime = util.getEnvVariable('FAUNADB_HTTP2_SESSION_IDLE_TIME')
 
-  return {
-    shouldOverride: useEnvVar,
-    value: useEnvVar ? parsed : 500,
+  var value = defaultIdleTime
+  // attemp to set the idle time to the env value and then the configured value
+  const values = [envIdleTime, configuredIdleTime]
+  for (const rawValue of values) {
+    const parsedValue =
+      rawValue === 'Infinity' ? Number.MAX_SAFE_INTEGER : parseInt(rawValue, 10)
+    const isNegative = parsedValue < 0
+    const isGreaterThanMax = parsedValue > maxIdleTime
+    // if we didn't get infinity or a positive integer move to the next value
+    if (isNegative || !parsedValue) continue
+    // if we did get something valid constrain it to the ceiling
+    value = parsedValue
+    if (isGreaterThanMax) value = maxIdleTime
+    break
   }
+
+  return value
 }
 
 module.exports = Client
-module.exports.resetNotifyAboutNewVersion = function() {
-  notifyAboutNewVersion = util.notifyAboutNewVersion()
-}

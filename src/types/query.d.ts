@@ -71,45 +71,7 @@ export function Abort(msg: ExprArg | string): Expr
  * )
  */
 export function At(timestamp: ExprArg, expr: ExprArg): Expr
-
-/**
- * The `Let` function binds one or more variables to a single value or expression.
- * When multiple variables are defined, the evaluation is from left to right.
- * Variables which have previously been defined may be used to define future variables.
- * Variables are lexically scoped to the expression passed via the in parameter.
- * The value of a variable can be referenced with `Var` syntax.
- *
- * [API Reference](https://docs.fauna.com/fauna/current/api/fql/functions/let?lang=javascript)
- *
- * ---
- *
- * @param {ExprArg} timestamp
- * The variable or variables to define.
- *
- * @param {ExprArg} expr
- * The expression in which the variables are defined.
- *
- * @example
- * q.Let({ x: 1, y: 2 }, q.Var('x'))
- */
 export function Let(vars: ExprArg, in_expr: ExprArg): Expr
-
-/**
- * The `Var` statement evaluates and returns the value stored in a named variable.
- * The `Var` statement can only be used inside other statements, such
- * as `Let` or `Lambda`.
- *
- * [API Reference](https://docs.fauna.com/fauna/current/api/fql/functions/var?lang=javascript)
- *
- * ---
- *
- * @param {ExprArg} varName
- * The name of the variable whose value should be returned.
- *
- * @example
- * q.Let({ x: 1, y: 2 }, q.Var('x'))
- * // The value x stored in the variable identified by name.
- */
 export function Var(varName: ExprArg): Expr
 
 /**
@@ -247,39 +209,36 @@ export function Foreach(
   collection: ExprArg,
   lambda_expr: ExprArg | Lambda
 ): Expr
-export function Filter(
-  collection: ExprArg,
-  lambda_expr: ExprArg | Lambda
-): Expr
+export function Filter(collection: ExprArg, lambda_expr: ExprArg | Lambda): Expr
 export function Take(number: ExprArg, collection: ExprArg): Expr
 export function Drop(number: ExprArg, collection: ExprArg): Expr
 export function Prepend(elements: ExprArg, collection: ExprArg): Expr
 export function Append(elements: ExprArg, collection: ExprArg): Expr
 export function IsEmpty(collection: ExprArg): Expr
 export function IsNonEmpty(collection: ExprArg): Expr
-export function IsNumber(expr: ExprArg): Expr
-export function IsDouble(expr: ExprArg): Expr
-export function IsInteger(expr: ExprArg): Expr
-export function IsBoolean(expr: ExprArg): Expr
-export function IsNull(expr: ExprArg): Expr
-export function IsBytes(expr: ExprArg): Expr
-export function IsTimestamp(expr: ExprArg): Expr
-export function IsDate(expr: ExprArg): Expr
-export function IsString(expr: ExprArg): Expr
-export function IsArray(expr: ExprArg): Expr
-export function IsObject(expr: ExprArg): Expr
-export function IsRef(expr: ExprArg): Expr
-export function IsSet(expr: ExprArg): Expr
-export function IsDoc(expr: ExprArg): Expr
-export function IsLambda(expr: ExprArg): Expr
-export function IsCollection(expr: ExprArg): Expr
-export function IsDatabase(expr: ExprArg): Expr
-export function IsIndex(expr: ExprArg): Expr
-export function IsFunction(expr: ExprArg): Expr
-export function IsKey(expr: ExprArg): Expr
-export function IsToken(expr: ExprArg): Expr
-export function IsCredentials(expr: ExprArg): Expr
-export function IsRole(expr: ExprArg): Expr
+export function IsNumber(expr: ExprArg | null): Expr
+export function IsDouble(expr: ExprArg | null): Expr
+export function IsInteger(expr: ExprArg | null): Expr
+export function IsBoolean(expr: ExprArg | null): Expr
+export function IsNull(expr: ExprArg | null): Expr
+export function IsBytes(expr: ExprArg | null): Expr
+export function IsTimestamp(expr: ExprArg | null): Expr
+export function IsDate(expr: ExprArg | null): Expr
+export function IsString(expr: ExprArg | null): Expr
+export function IsArray(expr: ExprArg | null): Expr
+export function IsObject(expr: ExprArg | null): Expr
+export function IsRef(expr: ExprArg | null): Expr
+export function IsSet(expr: ExprArg | null): Expr
+export function IsDoc(expr: ExprArg | null): Expr
+export function IsLambda(expr: ExprArg | null): Expr
+export function IsCollection(expr: ExprArg | null): Expr
+export function IsDatabase(expr: ExprArg | null): Expr
+export function IsIndex(expr: ExprArg | null): Expr
+export function IsFunction(expr: ExprArg | null): Expr
+export function IsKey(expr: ExprArg | null): Expr
+export function IsToken(expr: ExprArg | null): Expr
+export function IsCredentials(expr: ExprArg | null): Expr
+export function IsRole(expr: ExprArg | null): Expr
 
 export function Get(ref: ExprArg, ts?: ExprArg): Expr
 export function KeyFromSecret(secret: ExprArg): Expr
@@ -320,7 +279,11 @@ export function Difference(...sets: ExprArg[]): Expr
 export function Distinct(set: ExprArg): Expr
 export function Join(source: ExprArg, target: ExprArg | Lambda): Expr
 
-export function Range(set: ExprArg, from: ExprArg, to: ExprArg): Expr
+export function Range(
+  set: ExprArg,
+  from: ExprArg | null,
+  to: ExprArg | null
+): Expr
 export function Login(ref: ExprArg, params: ExprArg): Expr
 export function Logout(delete_tokens: ExprArg): Expr
 export function Identify(ref: ExprArg, password: ExprArg): Expr
@@ -350,11 +313,7 @@ export function LowerCase(expr: ExprArg): Expr
 export function LTrim(expr: ExprArg): Expr
 export function NGram(terms: ExprArg, min?: ExprArg, max?: ExprArg): Expr
 export function Repeat(expr: ExprArg, number?: ExprArg): Expr
-export function ReplaceStr(
-  expr: ExprArg,
-  find: ExprArg,
-  replace: ExprArg
-): Expr
+export function ReplaceStr(expr: ExprArg, find: ExprArg, replace: ExprArg): Expr
 export function ReplaceStrRegex(
   expr: ExprArg,
   find: ExprArg,
@@ -411,9 +370,13 @@ export function Roles(scope?: ExprArg): Expr
 export function Keys(scope?: ExprArg): Expr
 export function Tokens(scope?: ExprArg): Expr
 export function Credentials(scope?: ExprArg): Expr
-export function Equals(...args: ExprArg[]): Expr
+export function Equals(...args: (ExprArg | null)[]): Expr
 export function Contains(path: ExprArg, _in: ExprArg): Expr
-export function Select(path: ExprArg, from: ExprArg, _default?: ExprArg): Expr
+export function Select(
+  path: ExprArg,
+  from: ExprArg,
+  _default?: ExprArg | null
+): Expr
 export function SelectAll(path: ExprArg, from: ExprArg): Expr
 export function Abs(expr: ExprArg): Expr
 export function Add(...args: ExprArg[]): Expr
@@ -462,7 +425,7 @@ export function And(...args: ExprArg[]): Expr
 export function Or(...args: ExprArg[]): Expr
 export function Not(bool: ExprArg): Expr
 
-export function ToString(expr: ExprArg): Expr
+export function ToString(expr: ExprArg | null): Expr
 export function ToNumber(expr: ExprArg): Expr
 export function ToObject(expr: ExprArg): Expr
 export function ToArray(expr: ExprArg): Expr
@@ -478,7 +441,7 @@ export function MoveDatabase(from: ExprArg, to: ExprArg): Expr
 export function Documents(collection: ExprArg): Expr
 export function ContainsPath(path: ExprArg, _in: ExprArg): Expr
 export function ContainsField(field: string, _in: ExprArg): Expr
-export function ContainsValue(value: ExprArg, _in: ExprArg): Expr
+export function ContainsValue(value: ExprArg | null, _in: ExprArg): Expr
 export function Reverse(expr: ExprArg): Expr
 
 export function AccessProvider(name: ExprArg): Expr
