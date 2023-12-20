@@ -147,7 +147,6 @@ export function Lambda(var_name: ExprArg, expr: ExprArg): Expr
  *
  * @param {ExprArg} ref
  * The name, or `Reference`, of the function to call.
- * A function reference can be acquired using the Function function.
  *
  * @param {...ExprArg[]} args
  * The arguments for the function.
@@ -184,7 +183,7 @@ export function Query(lambda: ExprArg | Lambda): Expr
  * of all invocations in a new array of the same type (an `Array` or `Page`). As
  * `Map` processes array, each invocation of the lambda function can see the
  * effects of write operations from previous invocations.
-*
+ *
  * [API Reference](https://docs.fauna.com/fauna/current/api/fql/functions/map?lang=javascript)
  *
  * ---
@@ -193,24 +192,132 @@ export function Query(lambda: ExprArg | Lambda): Expr
  * The target `Array` over which the Lambda function iterates/operates.
  *
  * @param {ExprArg|Lambda} lambda_expr
- * The anonymous function to be executed. It must accept one argument,
- * which is the current item from `array` that is being processed.
+ * The anonymous function to be executed.
+ *
+ * @returns
+ * A new array of the same type omitting the first num elements.
  *
  * @example
  * q.Map([1, 2, 3], q.Lambda('x', q.Add(q.Var('x'), 1)))
  */
-export function Map(collection: ExprArg, lambda_expr: ExprArg | Lambda): Expr
-export function Merge(
-  object: ExprArg,
-  values: ExprArg,
-  resolver?: Expr | Lambda
-): Expr
-export function Foreach(
-  collection: ExprArg,
-  lambda_expr: ExprArg | Lambda
-): Expr
-export function Filter(collection: ExprArg, lambda_expr: ExprArg | Lambda): Expr
-export function Take(number: ExprArg, collection: ExprArg): Expr
+export function Map(collection: ExprArg, lambda_expr: ExprArg | Lambda): Expr;
+
+/**
+ * The `Merge` function combines two or more objects into one, by performing
+ * a shallow merge of the fields and values from both objects into a new object.
+ * You can provide an optional `customResolver` function that overrides the default
+ * resolver, and is used to determine which value to use. When the resolver returns
+ * a null value, `Merge` deletes that field in result.
+ *
+ * [API Reference](https://docs.fauna.com/fauna/v4/api/fql/functions/merge?lang=javascript)
+ *
+ * ---
+ *
+ * @param {ExprArg} object
+ * The first object to merge with the second object.
+ *
+ * @param {ExprArg} values
+ * The second object, or array of objects, to merge with the first object.
+ *
+ * @param {Expr|Lambda} resolver
+ * A lambda function that replaces the default resolver.
+ *
+ * @example
+ * q.Merge(
+ *  { a: 'Apple', b: 'Banana' },
+ *  { x: 'width', y: 'height' }
+ * )
+ */
+export function Merge(object: ExprArg,values: ExprArg,resolver?: Expr | Lambda): Expr;
+
+/**
+ * The `Foreach` function applies the `Lambda` serially to each member of an Array or Page,
+ * and returns the original, unmodified array.
+ *
+ * The `Foreach` function is very useful when the original array does not need to be modified,
+ * but a side effect is required for every value in an array. Later invocations of the Lambda
+ * can see the side effects of earlier invocations of the Lambda.
+ *
+ * [API Reference](https://docs.fauna.com/fauna/v4/api/fql/functions/foreach?lang=javascript)
+ *
+ * ---
+ *
+ * @param {ExprArg} collection
+ * The Array or Page over which the `lambda` function iterates/operates.
+ *
+ * @param {Lambda} lambda_expr
+ * The anonymous function to be executed.
+ *
+ * @example
+ * q.Foreach(
+ *  q.Paginate(q.Match(q.Index('name'), 'field')),
+ *  q.Lambda('X', q.Var('X'))
+ * )
+ */
+export function Foreach( collection: ExprArg, lambda_expr: ExprArg | Lambda): Expr;
+
+/**
+ * The `Filter` function applies the `Lambda` function to each member of `arrayOrSet`,
+ * which is an Array, Page, or Set. The return value matches the `arrayOrSet` type, and
+ * contains only those elements for which the `lambda` function returns `true`.
+ *
+ * [API Reference](https://docs.fauna.com/fauna/v4/api/fql/functions/filter?lang=javascript)
+ *
+ * ---
+ *
+ * @param {ExprArg} collection
+ * The group of items over which the lambda function iterates/operates.
+ *
+ * @param {Expr|Lambda} lambda_expr
+ * The anonymous function to be executed, which must return a boolean.
+ *
+ * @example
+ * q.Filter(
+ *  [1, 2, 3],
+ *  q.Lambda('i', q.Equals(0, q.Modulo(q.Var('i'), 2))),
+ * )
+ */
+export function Filter(collection: ExprArg, lambda_expr: ExprArg | Lambda): Expr;
+
+/**
+ * The `Take` function returns a new array of the same type as the array parameter
+ * that contains `num` elements from the head of the provided `array`. If `num` is
+ * zero or negative, the resulting `array` is empty. When applied to a Page, the
+ * returned page’s "after" cursor is adjusted to only cover the taken elements.
+ *
+ * [API Reference](https://docs.fauna.com/fauna/v4/api/fql/functions/take?lang=javascript)
+ *
+ * ---
+ *
+ * @param {ExprArg} number
+ * The Number of elements to extract from the beginning of array.
+ *
+ * @param {Expr|Lambda} collection
+ * Extract elements from this Array.
+ *
+ * @example
+ * q.Take(2, [1, 2, 3])
+ */
+export function Take(number: ExprArg, collection: ExprArg): Expr;
+
+/**
+ * The `Drop` function returns a new array of the same type that contains the remaining
+ * elements, after `num` have been removed from the head of the array. If `num` is zero or
+ * negative, all elements of the array are returned unmodified.
+ *
+ * [API Reference](https://docs.fauna.com/fauna/v4/api/fql/functions/drop?lang=javascript)
+ *
+ * ---
+ *
+ * @param {ExprArg} number
+ * The number of elements to extract from the beginning of the array.
+ *
+ * @param {Expr|Lambda} collection
+ * The drop operations should be performed on this array.
+ *
+ * @example
+ * q.Drop(2, [1, 2, 3])
+ */
 export function Drop(number: ExprArg, collection: ExprArg): Expr
 export function Prepend(elements: ExprArg, collection: ExprArg): Expr
 export function Append(elements: ExprArg, collection: ExprArg): Expr
